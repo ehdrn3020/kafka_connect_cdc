@@ -1,0 +1,9 @@
+AWS_ACCESS_KEY_ID="AICOD2900DKO92"
+AWS_SECRET_ACCESS_KEY="Mdfowy2DodjbyDOsdfmeo200DoyDo"
+AWS_DEFAULT_REGION="ap-northeast-3"
+INSTANCE_TYPE="t2.medium"
+AMI_ID="ami-012dpeccdpe9920"
+SUBNET_ID="subnet-0ccedf230sdccc"
+SECURITY_GROUP_IDS="sg-042832042024"
+KEY_NAME="mykeyname"
+SPOT_PRICE="0.02"  # Spot 인스턴스 가격 (시장 가격)
