@@ -55,15 +55,28 @@ cd kafka_2.13-3.5.0/
 # 클러스터 ID를 생성
 ./bin/kafka-storage.sh random-uuid
 >>> ghTDAhg9Q3umdlTzkI5fYw
+
+# 스토리지 디렉토리 설정 ( 기본값은 /tmp/kraft-combined-logs )
+./bin/kafka-storage.sh format -t ghTDAhg9Q3umdlTzkI5fYw -c ./config/kraft/server.properties 
+
 # 해당 경로에서 클러스터 ID 확인 
 cat /tmp/kraft-combined-logs/meta.properties
 
 
-# 스토리지 디렉토리 설정 ( 기본값은 /tmp/kraft-combined-logs )
-./bin/kafka-storage.sh format -t ghTDAhg9Q3umdlTzkI5fYw \
-> -c ./config/kraft/server.properties 
-
 # 카프카 브로커 실행
 ./bin/kafka-server-start.sh ./config/kraft/server.properties
+```
+<br>
+
+## 레코드 주고받기
+```
+# 토픽생성
+/bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic my-first-topic --partitions 1 --replication-factor 1
+
+# 프로듀서 실행
+./bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic my-first-topic
+
+# 컨슈머 실행
+./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic my-first-topic
 ```
 <br>
