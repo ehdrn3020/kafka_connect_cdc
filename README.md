@@ -62,7 +62,6 @@ cd kafka_2.13-3.5.0/
 # 해당 경로에서 클러스터 ID 확인 
 cat /tmp/kraft-combined-logs/meta.properties
 
-
 # 카프카 브로커 실행
 ./bin/kafka-server-start.sh ./config/kraft/server.properties
 ```
@@ -73,6 +72,12 @@ cat /tmp/kraft-combined-logs/meta.properties
 # 토픽생성
 /bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic my-first-topic --partitions 1 --replication-factor 1
 
+# 토픽 목록 확인
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+
+# 토픽 삭제
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --delete --topic my-first
+
 # 프로듀서 실행
 ./bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic my-first-topic
 
@@ -80,3 +85,51 @@ cat /tmp/kraft-combined-logs/meta.properties
 ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic my-first-topic
 ```
 <br>
+
+## 카프카 커넥트 실행
+```
+# 플러그인 경로 확인
+ls libs/ | grep connect
+
+# 커넥트 설정파일 확인
+ls config | grep connect
+
+# 커넥트 실행
+./bin/connect-distributed.sh ./config/connect-distributed.properties
+
+# 커넥트 관련 토픽 확인
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+connect-configs
+connect-offsets
+connect-status
+
+
+# 파일 커넥트 플러그인 실행 
+
+# 1) 환경변수로 CLASSPATH 설정
+CLASSPATH=./libs/connect-file-3.5.0.jar ./bin/connect-distributed.sh ./config/connect-distributed.properties
+
+# 2) plugin.path 사용 
+sudo cp ./libs/connect-file-3.5.0.jar /opt/kafka/plugins/
+
+# 설정 파일에서 플러그인 경로 지정
+vi ./config/connect-distributed.properties
+>>>
+plugin.path=/opt/kafka/plugins
+
+# 3) REST API를 통한 동적 로딩
+curl -X PUT http://localhost:8083/connector-plugins/reload
+
+```
+<br>
+
+## 커넥트 REST API
+```
+# 기본 정보 확인
+curl localhost:8083
+>>>
+{"version":"3.5.0","commit":"ghTDAhg9Q3umdlTzkI5fYw","kafka_cluster_id":"ikAP6ezzTm6garHxeD-28B"}
+
+# 실행 중인 플러그인 확인
+curl localhost:8083/connector-plugins | jq
+```
