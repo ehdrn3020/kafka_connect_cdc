@@ -86,25 +86,25 @@ cat /tmp/kraft-combined-logs/meta.properties
 ```
 <br>
 
-## 카프카 커넥트 실행
+## 카프카 커넥터 실행
 ```
 # 플러그인 경로 확인
 ls libs/ | grep connect
 
-# 커넥트 설정파일 확인
+# 커넥터 설정파일 확인
 ls config | grep connect
 
-# 커넥트 실행
+# 커넥터 실행
 ./bin/connect-distributed.sh ./config/connect-distributed.properties
 
-# 커넥트 관련 토픽 확인
+# 커넥터 관련 토픽 확인
 ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 connect-configs
 connect-offsets
 connect-status
 
 
-# 파일 커넥트 플러그인 실행 
+# 파일 커넥터 플러그인 실행 
 
 # 1) 환경변수로 CLASSPATH 설정
 CLASSPATH=./libs/connect-file-3.5.0.jar ./bin/connect-distributed.sh ./config/connect-distributed.properties
@@ -123,13 +123,65 @@ curl -X PUT http://localhost:8083/connector-plugins/reload
 ```
 <br>
 
-## 커넥트 REST API
+## 커넥터 REST API
 ```
 # 기본 정보 확인
 curl localhost:8083
 >>>
 {"version":"3.5.0","commit":"ghTDAhg9Q3umdlTzkI5fYw","kafka_cluster_id":"ikAP6ezzTm6garHxeD-28B"}
 
+# 실행 중인 커넥터 목록
+curl http://localhost:8083/connectors
+
 # 실행 중인 플러그인 확인
 curl localhost:8083/connector-plugins | jq
+```
+<br/>
+
+## 파일 커넥터 예제
+```
+# 파일 커넥터 설정 파일 생성
+vi sink-config.json
+{
+  "name":"file-sink",
+  "connector.class":"org.apache.kafka.connect.file.FileStreamSinkConnector",
+  "tasks.max":"1",
+  "topics":"topic-to-export",
+  "file":"/tmp/sink.out",
+  "value.converter":"org.apache.kafka.connect.storage.StringConverter"
+}
+
+# 파일 커넥터에 사용할 토픽 생성
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --replication-factor 1 --partitions 1 --topic topic-to-export
+
+# 커넥터 실행
+curl -X PUT -H "Content-Type: application/json" -d @sink-config.json localhost:8083/connectors/file-sink/config
+
+# 커넥터 상태 확인
+curl localhost:8083/connectors/file-sink
+>>>
+{
+  "name":"file-sink",
+  "config":{
+    "connector.class":"org.apache.kafka.connect.file.FileStreamSinkConnector",
+    "file":"/tmp/sink.out",
+    "tasks.max":"1",
+    "topics":"topic-to-export",
+    "name":"file-sink",
+    "value.converter":"org.apache.kafka.connect.storage.StringConverter"
+  },
+  "tasks":[
+    {"connector":"file-sink","task":0}
+  ],
+  "type":"sink"
+}
+
+# 데이터 input 확인하기위한 파일 테일링
+tail -f /tmp/sink.out
+
+# 프로듀서를 통해 토픽에 레코드 추가
+./bin/kafka-console-producer.sh --bootstrap-server localhost:9092 --topic topic-to-export
+>first record! 1
+>secont record!! 2
+>third recordddddd
 ```
