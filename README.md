@@ -64,6 +64,8 @@ cat /tmp/kraft-combined-logs/meta.properties
 
 # 카프카 브로커 실행
 ./bin/kafka-server-start.sh ./config/kraft/server.properties
+# 또는
+nohup ./bin/kafka-server-start.sh ./config/kraft/server.properties > kafka-server.log 2>&1 &
 ```
 <br>
 
