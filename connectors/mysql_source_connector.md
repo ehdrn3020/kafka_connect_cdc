@@ -245,5 +245,10 @@ UPDATE orders SET status = 'SHIPPED' WHERE order_id = 2;
 # orders 테이블의 변경사항 확인
 ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
     --topic dbserver.inventory.orders --from-beginning
+
+
+# 데이터베이스 스키마 변경사항을 확인
+./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+    --topic schema-changes.inventory --from-beginning
 ```
 <br/>
