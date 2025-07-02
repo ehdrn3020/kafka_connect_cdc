@@ -32,8 +32,8 @@ sudo mysql_secure_installation
 
 ### Debezium용 MariaDB 설정
 ```
-# CDC를 위한 mysql log를 남기기위해 [mysqld] 섹션에 설정 추가
-sudo vi /etc/my.cnf.d/server.cnf
+# CDC를 위한 mysql 바이너리 log를 남기기위해 [mysqld] 섹션에 설정 추가
+sudo vi /etc/my.cnf
 [mysqld]
 server-id=1
 log_bin=mysql-bin
@@ -52,11 +52,20 @@ sudo systemctl restart mariadb
 # MariaDB 접속
 mysql -u root -p
 
-# 로그 설정 확인
+### 로그 설정 확인
+
+# log_bin 변수는 바이너리 로그가 활성화되어 있는지 여부를 나타 냄
 SHOW VARIABLES LIKE 'log_bin';
+
+# 바이너리 로그와 관련된 여러 설정을 한 번에 확인
 SHOW VARIABLES LIKE '%binlog%';
+
+# 각 로그 파일의 이름과 크기를 확인
 SHOW BINARY LOGS;
+
+# 현재 마스터 서버의 바이너리 로그 파일과 그 안에서의 위치를 보여 줌
 SHOW MASTER STATUS;
+
 
 # 다음 SQL 명령어 실행
 CREATE DATABASE inventory;
@@ -115,6 +124,8 @@ ls /home/ec2-user/confluent-7.9.1/share/confluent-hub-components/debezium-debezi
 
 ### 커넥터 Path 설정
 ```
+cd kafka_2.13-3.5.0/
+
 # 프로퍼티 파일 수정
 vi config/connect-distributed.properties
 
@@ -148,6 +159,7 @@ curl localhost:8083/connector-plugins | jq
 ```
 cd kafka_2.13-3.5.0/
 
+# 바이너리 로그를 순차적으로 읽고 일관성을 위해 tasks = 1 로 설정
 vi config/connect-mysql-source.json
 {
   "name": "mysql-source-connector",  
@@ -178,7 +190,7 @@ curl http://localhost:8083/connectors
 ["mysql-source-connector"]
 
 # 등록 해지
-curl -X DELETE http://localhost:8083/connectors/s3-sink-connector
+curl -X DELETE http://localhost:8083/connectors/mysql-source-connector
 
 # 관련 토픽 생성 확인
 ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
@@ -250,5 +262,9 @@ UPDATE orders SET status = 'SHIPPED' WHERE order_id = 2;
 # 데이터베이스 스키마 변경사항을 확인
 ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 \
     --topic schema-changes.inventory --from-beginning
+
+
+# 첫 번째 메시지의 op 필드가 "r"로 표시되어 있는 것은 이 이벤트가 스냅샷에서 캡처
+# 두 번째 메시지의 op 필드가 "c"로 표시되어 있는 것은 이 이벤트가 실제로 데이터베이스에 삽입된 변경 사항
 ```
 <br/>

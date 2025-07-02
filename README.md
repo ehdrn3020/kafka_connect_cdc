@@ -32,7 +32,7 @@ ssh -i setting_aws/keypair.pem ec2-user@server_1_ip
 ## Java 설치
 ```
 # java 17 설치 ( kafak 3.5.0 과 호환 )
-sudo yum install -y java-17-amazon-corretto-devel
+sudo dnf install -y java-17-amazon-corretto-devel
 
 # JAVA_HOME 환경변수 설정
 echo 'export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto' >> ~/.bashrc

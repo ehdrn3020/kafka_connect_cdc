@@ -50,7 +50,7 @@ export PATH=$PATH:$CONFLUENT_HOME/bin
 ```
 cd kafka_2.13-3.5.0/
 
-vi config/connect-s3-sink.properties
+vi config/connect-s3-sink.json
 
 # DefaultPartitioner 파티션 클래스 사용시
 {
@@ -81,7 +81,7 @@ vi config/connect-s3-sink.properties
   "name": "s3-sink-connector",
   "config": {
     "connector.class": "io.confluent.connect.s3.S3SinkConnector",
-    "tasks.max": "5",
+    "tasks.max": "3",
     "flush.size": "1",
     "topics": "orders",
     "s3.bucket.name": "kafka-sink-data",
@@ -111,7 +111,7 @@ vi config/connect-s3-sink.properties
 # 해당 커넥터에 대해 생성될 수 있는 최대 태스크 수
 # 각 태스크는 토픽의 서로 다른 파티션을 처리합니다
 # 데이터 처리 속도와 처리량이 향상됩니다
-"tasks.max": "5",
+"tasks.max": "3",
 
 "storage.class": "io.confluent.connect.s3.storage.S3Storage" // Kafka Connect가 데이터를 저장할 스토리지 시스템을 지정하는 설정
 "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner"  // 시간 기반 파티셔닝
@@ -184,7 +184,7 @@ curl localhost:8083/connector-plugins | jq
 ### 커넥터 등록
 ```
 # 동적 커넥터 등록
-curl -X POST -H "Content-Type: application/json" --data @config/connect-s3-sink.properties http://localhost:8083/connectors
+curl -X POST -H "Content-Type: application/json" --data @config/connect-s3-sink.json http://localhost:8083/connectors
 
 # 등록 확인
 curl http://localhost:8083/connectors
@@ -198,8 +198,8 @@ curl -X DELETE http://localhost:8083/connectors/s3-sink-connector
 
 ### 토픽생성
 ```
-# 5개의 파티션으로 구성된 orders 토픽 생성
-./bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic orders --partitions 5 --replication-factor 1
+# 3개의 파티션으로 구성된 orders 토픽 생성
+./bin/kafka-topics.sh --bootstrap-server localhost:9092 --create --topic orders --partitions 3 --replication-factor 1
 ```
 <br/>
 
