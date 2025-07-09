@@ -10,7 +10,7 @@ cd /opt
 sudo wget https://files.pythonhosted.org/packages/source/a/ansible/ansible-2.9.27.tar.gz && \
 sudo tar -xvzf ansible-2.9.27.tar.gz && \
 cd ansible-2.9.27 && \
-sudo make
+sudo make && \
 sudo make install
 # git 설치
 sudo dnf install git -y
