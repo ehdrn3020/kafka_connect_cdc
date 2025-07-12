@@ -78,7 +78,8 @@ CREATE TABLE customers (
     first_name VARCHAR(255) NOT NULL,
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dt CHAR(8) NOT NULL
 );
 
 # products 테이블 생성
@@ -87,7 +88,8 @@ CREATE TABLE products (
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dt CHAR(8) NOT NULL
 );
 
 # orders 테이블 생성
@@ -97,7 +99,7 @@ CREATE TABLE orders (
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10,2),
     status VARCHAR(50),
-    FOREIGN KEY (customer_id) REFERENCES customers(id)
+    dt CHAR(8) NOT NULL
 );
 ```
 <br/>
@@ -192,7 +194,7 @@ curl http://localhost:8083/connectors
 # 등록 해지
 curl -X DELETE http://localhost:8083/connectors/mysql-source-connector
 
-# 관련 토픽 생성 확인
+# 관련 토픽 생성 확인 ( row가 없는 테이블은 조회 안됨 )
 ./bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
 __consumer_offsets
 connect-configs
@@ -214,29 +216,25 @@ mysql -u root -p
 USE inventory;
 
 # customers 데이터 입력
-INSERT INTO customers (first_name, last_name, email) VALUES 
-    ('John', 'Doe', 'john.doe@example.com'),
-    ('Jane', 'Smith', 'jane.smith@example.com'),
-    ('Bob', 'Johnson', 'bob.johnson@example.com');
+INSERT INTO customers (first_name, last_name, email, dt) VALUES 
+    ('John', 'Doe', 'john.doe@example.com', '20250710'),
+    ('Jane', 'Smith', 'jane.smith@example.com', '20250711'),
+    ('Bob', 'Johnson', 'bob.johnson@example.com' '20250712');
 
 # products 데이터 입력
-INSERT INTO products (name, description, price) VALUES
-    ('Product A', 'Description for Product A', 19.99),
-    ('Product B', 'Description for Product B', 29.99),
-    ('Product C', 'Description for Product C', 39.99);
+INSERT INTO products (name, description, price, dt) VALUES
+    ('Product A', 'Description for Product A', 19.99, '20250710'),
+    ('Product B', 'Description for Product B', 29.99, '20250711'),
+    ('Product C', 'Description for Product C', 39.99 '20250712');
 
 # orders 데이터 입력
-INSERT INTO orders (customer_id, total_amount, status) VALUES 
-    (1, 100.00, 'COMPLETED'),
-    (2, 150.50, 'PENDING'),
-    (1, 75.25, 'COMPLETED');
+INSERT INTO orders (customer_id, total_amount, status, dt) VALUES 
+    (1, 100.00, 'COMPLETED', '20250710'),
+    (2, 150.50, 'PENDING', '20250711'),
+    (1, 75.25, 'COMPLETED', '20250712');
 
 # customers 데이터 수정 테스트
 UPDATE customers SET email = 'john.doe.updated@example.com' WHERE id = 1;
-
-# 새로운 주문 추가 테스트
-INSERT INTO orders (customer_id, total_amount, status) 
-VALUES (3, 200.00, 'NEW');
 
 # 주문 상태 변경 테스트
 UPDATE orders SET status = 'SHIPPED' WHERE order_id = 2;

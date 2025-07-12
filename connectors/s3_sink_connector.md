@@ -21,12 +21,7 @@ tar xzf confluent-7.9.1.tar.gz
 
 # s3 plugin 설치
 ./confluent-7.9.1/bin/confluent-hub install confluentinc/kafka-connect-s3:10.6.6
->>>
-Do you want to update all detected configs? (yN) n
-Do you want to update 1? (yN) n
-Do you want to update 2? (yN) n
-Do you want to update 3? (yN) n
-Do you want to update 4? (yN) n
+>>> All Question's answer is 'y'
 
 # 설치 확인
 ls /home/ec2-user/confluent-7.9.1/share/confluent-hub-components/confluentinc-kafka-connect-s3/lib
@@ -102,6 +97,44 @@ vi config/connect-s3-sink.json
     "locale": "ko_KR",
     "timezone": "Asia/Seoul",
     "rotate.schedule.interval.ms": "60000"
+  }
+}
+
+# mysql cdc topic
+{
+  "name": "s3-sink-connector",
+  "config": {
+    /* ---------- 필수 정보 ---------- */
+    "connector.class"          : "io.confluent.connect.s3.S3SinkConnector",
+    "tasks.max"                : "1",
+    "topics"                   : "dbserver.inventory.customers",
+    "s3.bucket.name"           : "kafka-sink-data",
+    "s3.region"                : "ap-northeast-2",
+    "storage.class"            : "io.confluent.connect.s3.storage.S3Storage",
+    "aws.access.key.id"        : "<AWS_ACCESS_KEY>",
+    "aws.secret.access.key"    : "<AWS_SECRET_KEY>",
+    /* ---------- 메시지 포맷 ---------- */
+    "format.class"             : "io.confluent.connect.s3.format.json.JsonFormat",
+    "value.converter"          : "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable" : "false",
+    "key.converter"            : "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable"   : "false",
+    /* ---------- 파티셔닝(선택) ---------- */
+    "partitioner.class"        : "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
+    "timestamp.extractor"      : "RecordField",
+    "timestamp.field"          : "dt",
+    "timestamp.parser"         : "yyyyMMdd",
+    "partition.duration.ms"    : "86400000",
+    "path.format"              : "'yymmdd='yyyyMMdd",
+    /* ---------- 파일 회전 ---------- */
+    "flush.size"               : "10",
+    "rotate.schedule.interval.ms": "600000",
+    "timezone": "Asia/Seoul",
+    "locale":   "ko_KR", 
+    /* ---------- Debezium 메시지 언랩 ---------- */
+    "transforms"                       : "unwrap",
+    "transforms.unwrap.type"           : "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.drop.tombstones": "true",
   }
 }
 
