@@ -219,7 +219,7 @@ USE inventory;
 INSERT INTO customers (first_name, last_name, email, dt) VALUES 
     ('John', 'Doe', 'john.doe@example.com', '20250710'),
     ('Jane', 'Smith', 'jane.smith@example.com', '20250711'),
-    ('Bob', 'Johnson', 'bob.johnson@example.com' '20250712');
+    ('Bob', 'Johnson', 'bob.johnson@example.com', '20250712');
 
 # products 데이터 입력
 INSERT INTO products (name, description, price, dt) VALUES
