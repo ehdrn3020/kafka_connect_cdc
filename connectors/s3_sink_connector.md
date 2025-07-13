@@ -122,8 +122,7 @@ vi config/connect-s3-sink.json
     /* ---------- 파티셔닝(선택) ---------- */
     "partitioner.class"        : "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
     "timestamp.extractor"      : "RecordField",
-    "timestamp.field"          : "dt",
-    "timestamp.parser"         : "yyyyMMdd",
+
     "partition.duration.ms"    : "86400000",
     "path.format"              : "'yymmdd='yyyyMMdd",
     /* ---------- 파일 회전 ---------- */
@@ -135,27 +134,42 @@ vi config/connect-s3-sink.json
     "transforms"                       : "unwrap",
     "transforms.unwrap.type"           : "io.debezium.transforms.ExtractNewRecordState",
     "transforms.unwrap.drop.tombstones": "true",
+    "transforms.unwrap.delete.handling.mode": "drop",
+    "timestamp.extractor": "Wallclock"
+    
   }
 }
+```
+<br/>
 
+### 각 옵션 설명
+```
+"tasks.max": "3" 
+// 해당 커넥터에 대해 생성될 수 있는 최대 태스크 수
+// 각 태스크는 토픽의 서로 다른 파티션을 처리합니다
+// 데이터 처리 속도와 처리량이 향상됩니다
 
-### 각 옵션 설명 ###
+"storage.class": "io.confluent.connect.s3.storage.S3Storage" 
+// Kafka Connect가 데이터를 저장할 스토리지 시스템을 지정하는 설정
 
-# 해당 커넥터에 대해 생성될 수 있는 최대 태스크 수
-# 각 태스크는 토픽의 서로 다른 파티션을 처리합니다
-# 데이터 처리 속도와 처리량이 향상됩니다
-"tasks.max": "3",
+"partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner"  
+// 시간 기반 파티셔닝
 
-"storage.class": "io.confluent.connect.s3.storage.S3Storage" // Kafka Connect가 데이터를 저장할 스토리지 시스템을 지정하는 설정
-"partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner"  // 시간 기반 파티셔닝
 "timestamp.extractor": "RecordField"    // 레코드 필드에서 시간 정보 추출
 "timestamp.field": "dt"                 // 시간 정보가 있는 필드 이름
 "timestamp.parser": "yyyy-MM-dd"        // 날짜 형식 지정
 "path.format": "'year'=YYYY/'month'=MM/'day'=dd"  // S3 경로 형식
 "partition.duration.ms": "86400000"     // 파티션 기간 (1일 = 86400000ms)
+
 "locale": "ko_KR"                       // 로케일 설정
 "timezone": "Asia/Seoul"                // 시간대 설정
-"rotate.schedule.interval.ms": "60000"  // 파일 로테이션 주기 (1분 = 60000ms)
+
+"rotate.schedule.interval.ms": "60000"  
+// 파일 로테이션 주기 (1분 = 60000ms)
+
+"timestamp.extractor": "Wallclock"
+// 레코드 안의 값이 아니라, 커넥터 JVM 시계를 기준으로 파티션 결정
+// 커넥터가 그 레코드를 처리한 순간의 시각
 ```
 <br/>
 
@@ -177,8 +191,10 @@ vi config/connect-s3-sink.json
 >2:{"schema":{"type":"struct","fields":[{"type":"string","optional":false,"field":"order_id"},{"type":"string","optional":false,"field":"customer_id"},{"type":"string","optional":false,"field":"book_id"},{"type":"int32","optional":false,"field":"quantity"},{"type":"double","optional":false,"field":"price"},{"type":"string","optional":false,"field":"dt"}]},"payload":{"order_id":"2","customer_id":"124","book_id":"457","quantity":1,"price":15.99,"dt":"2023-10-02"}}
 
 # 멱등성
-중복없이 동일한 레코드의 멱등성을 보장하기 위해서는 토픽 레벨의 로그 컴팩션을 적용하면 된다.
-카프카 컨넥트 레벨에서는 저장되는 s3 파일명에 key값을 포함하도록 수정하여 가장 최근 데이터만 유효하도록 하는 방법이 있다. 
+중복없이 동일한 레코드의 멱등성을 보장하기 위해서는 
+토픽 레벨의 로그 컴팩션을 적용하면 된다.
+카프카 컨넥트 레벨에서는 저장되는 s3 파일명에 key값을 포함하도록 수정하여 
+가장 최근 데이터만 유효하도록 하는 방법이 있다. 
 ```
 <br/>
 
